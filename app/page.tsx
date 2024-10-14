@@ -1,113 +1,130 @@
-import Image from "next/image";
-
+"use client";
+import {
+  addEdge,
+  ReactFlow,
+  Controls,
+  Background,
+  applyEdgeChanges,
+  applyNodeChanges,
+  Panel,
+  useReactFlow,
+  Connection,
+  MarkerType,
+} from "@xyflow/react";
+import { uuid } from "@/lib/utils";
+import "@xyflow/react/dist/style.css";
+import Node2 from "@/components/nodes/Node2";
+import Node1 from "@/components/nodes/Node1";
+import Node3 from "@/components/nodes/Node3";
+import { useCallback, useRef, useState } from "react";
+import { LinkIcon } from "@heroicons/react/24/outline";
+import CustomCurvedEdge from "@/components/edges/Edge1";
+import CustomEdge from "@/components/edges/Edge2";
+import { Button } from "@/components/ui/button";
+import ConnectionLine from "@/components/connectionline/ConnectionLine";
+const Nodes = [{type:"Node1",name:"Node1",id:"800"},{type:"Node2",name:"Node2",id:"801"},{type:"Node3",name:"Node3",id:"802"}]
+const initialNodes:any = [
+];
+const nodeTypes = { Node1, Node2, Node3 };
+const initialEdges: any = [];
 export default function Home() {
+  const [nodes, setNodes] = useState<any>(initialNodes);
+  const [edges, setEdges] = useState<any>(initialEdges);
+const {screenToFlowPosition} = useReactFlow();
+  const isValidConnection = (connection: any) => {
+    if (connection.source === connection.target) {
+      return false;
+    }
+    return true;
+  };
+  console.log("nodes",nodes);
+  console.log("edges",edges)
+  const onNodesChange = useCallback(
+    (changes: any) => {
+      setNodes((eds: any) => applyNodeChanges(changes, eds));
+    },
+    [setNodes]
+  );
+  const onEdgesChange = useCallback(
+    (changes: any) => {
+      setEdges((eds: any) => applyEdgeChanges(changes, eds));
+    },
+    [setEdges]
+  );
+  const onConnect = useCallback(
+    (connection: Connection) => {
+      let edge;
+      edge ={
+        ...connection,
+        id:uuid(),
+        type:"CustomEdge",
+        markerEnd:{
+          type:MarkerType.ArrowClosed,
+          width:10,
+          height:10,
+          color:"#fff"
+        },
+        data:[]
+      }
+
+      setEdges((eds: any) => eds.concat(edge));
+    },
+    [setEdges]
+  );
+  const getnodetype = useRef<any>(null)
+ const onDragStart = (event:React.DragEvent<HTMLButtonElement>,type:string,id:string)=>{
+  getnodetype.current=[type,id];
+  event.dataTransfer.effectAllowed ="move"
+ }
+ const onDragOver:React.DragEventHandler<HTMLDivElement> = (event) =>{
+  event.preventDefault();
+  event.dataTransfer.dropEffect ="move";
+ }
+ const onDrop:React.DragEventHandler<HTMLDivElement> = (event)=>{
+  event.preventDefault();
+  const type = getnodetype.current[0];
+  const id = getnodetype.current[1];
+  if(!type){
+    return;
+  }
+  const position = screenToFlowPosition({x:event.clientX,y:event.clientY})
+  let node;
+  node=undefined;
+  
+  if(["Node1","Node2","Node3"].includes(type)){
+    node = {
+      id :uuid(),
+      type:type,
+      position,
+      data:[]
+    }
+  }
+  if(node){
+    setNodes((eds: any) => eds.concat(node));
+  }
+ }
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    <div className="w-[100vw] h-[100vh] min-h-screen ">
+      <ReactFlow
+        colorMode="dark"
+        onEdgesChange={onEdgesChange}
+        onNodesChange={onNodesChange}
+        edgeTypes={{ CustomEdge: CustomEdge }}
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        onConnect={onConnect}
+        isValidConnection={isValidConnection}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+        connectionLineComponent={ConnectionLine}
+      >
+        <Controls />
+        <Background />
+        <Panel position="top-right" className="bg-white rounded-lg p-7">
+          <div className="flex flex-wrap gap-3">{Nodes.map((item,index)=><Button variant={'secondary'} key={index} className="rounded-lg" draggable onDragStart={(event)=>onDragStart(event,item.type,item.id)}>{item.name}</Button>)}</div>
+        </Panel>
+         </ReactFlow>
+    </div>
   );
 }
