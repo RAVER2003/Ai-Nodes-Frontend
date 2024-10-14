@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-
+import { cn } from "@/lib/utils";
+import { ReactFlowProvider } from "@xyflow/react";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -16,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={cn(inter.className,"flex flex-col w-full ")}><ReactFlowProvider>{children}</ReactFlowProvider></body>
     </html>
   );
 }
